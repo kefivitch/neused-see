@@ -403,7 +403,6 @@ $current_date = date('Y-m-d H:i:s');
                     for($i = 0; $i<$var_name_count; $i++){ $var_id=$orivar['main_attr_id'][$i];
                       $var_name[$i]=$orivar['main_attr_value'][$var_id];
                       $name[$i]=App\ProductAttributes::where('id',$var_id)->first();
-
                       }
 
 

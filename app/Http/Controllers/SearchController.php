@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Commission;
@@ -18,54 +19,48 @@ class SearchController extends Controller
 {
     public function ajaxSearch(Request $request)
     {
-
         require_once 'price.php';
 
         $search = $request->search;
-        $result = array();
-        $variant = array();
-        $ar = array();
+        $result = [];
+        $variant = [];
+        $ar = [];
         $imageurl = url('variantimages/thumbnails/');
         $infourl = url('images');
 
+        //return response()->json($request->catid);
         if ($request->catid == 'all') {
-            $query = Product::where('tags', 'LIKE', '%' . $search . '%')
-                ->orWhere('name', 'LIKE', '%' . $search . '%')
+            $query = Product::where('tags', 'LIKE', '%'.$search.'%')
+                ->orWhere('name', 'LIKE', '%'.$search.'%')
                 ->get();
         } else {
-            $query = Product::where('tags', 'LIKE', '%' . $search . '%')
-                ->where('category_id', '=', $request->catid)
-                ->where('name', 'LIKE', '%' . $search . '%')
+            $query = Product::where('tags', 'LIKE', '%'.$search.'%')
+            ->orWhere('name', 'LIKE', '%'.$search.'%')
+            ->where('category_id', '=', $request->catid)
                 ->with('subvariants')
                 ->get();
+
+            //return response()->json($query);
         }
 
         if (count($query) < 1) {
-
-            $result[] = ['id' => 1, 'value' => 'No Result found', 'img' => $infourl . '/info.png', 'url' => '#'];
+            $result[] = ['id' => 1, 'value' => 'No Result found', 'img' => $infourl.'/info.png', 'url' => '#'];
         } else {
-
-            $price_array = array();
+            $price_array = [];
             $price_login = Genral::findOrFail(1)->login;
 
             foreach ($query->unique('child') as $searchresult) {
-
                 foreach ($searchresult->subcategory->products as $old) {
-
                     foreach ($old->subvariants as $orivar) {
-
                         if ($price_login == 0 || Auth::check()) {
-
                             $convert_price = 0;
                             $show_price = 0;
 
                             $commision_setting = CommissionSetting::first();
 
-                            if ($commision_setting->type == "flat") {
-
+                            if ($commision_setting->type == 'flat') {
                                 $commission_amount = $commision_setting->rate;
                                 if ($commision_setting->p_type == 'f') {
-
                                     if ($old->tax_r != '') {
                                         $cit = $commission_amount * $old->tax_r / 100;
                                         $totalprice = $old->vender_price + $orivar->price + $commission_amount + $cit;
@@ -83,11 +78,8 @@ class SearchController extends Controller
                                         $convert_price = $totalsaleprice == '' ? $totalprice : $totalsaleprice;
                                         $show_price = $totalprice;
                                         array_push($price_array, $totalsaleprice);
-
                                     }
-
                                 } else {
-
                                     $totalprice = ($old->vender_price + $orivar->price) * $commission_amount;
 
                                     $totalsaleprice = ($old->vender_offer_price + $orivar->price) * $commission_amount;
@@ -105,16 +97,12 @@ class SearchController extends Controller
                                         $convert_price = $buyersaleprice == '' ? $buyerprice : $buyersaleprice;
                                         $show_price = $buyerprice;
                                         array_push($price_array, $bsprice);
-
                                     }
-
                                 }
                             } else {
-
                                 $comm = Commission::where('category_id', $old->category_id)->first();
                                 if (isset($comm)) {
                                     if ($comm->type == 'f') {
-
                                         if ($old->tax_r != '') {
                                             $cit = $comm->rate * $old->tax_r / 100;
                                             $price = $old->vender_price + $comm->rate + $orivar->price + $cit;
@@ -128,14 +116,11 @@ class SearchController extends Controller
                                         $show_price = $price;
 
                                         if ($old->vender_offer_price == 0) {
-
                                             array_push($price_array, $price);
                                         } else {
                                             array_push($price_array, $offer);
                                         }
-
                                     } else {
-
                                         $commission_amount = $comm->rate;
 
                                         $totalprice = ($old->vender_price + $orivar->price) * $commission_amount;
@@ -155,7 +140,6 @@ class SearchController extends Controller
                                             $show_price = round($buyerprice, 2);
                                             array_push($price_array, $bsprice);
                                         }
-
                                     }
                                 } else {
                                     $commission_amount = 0;
@@ -179,11 +163,8 @@ class SearchController extends Controller
                                     }
                                 }
                             }
-
                         }
-
                     }
-
                 }
 
                 if ($price_array != null) {
@@ -203,7 +184,6 @@ class SearchController extends Controller
                     } else {
                         $endp = $endp;
                     }
-
                 } else {
                     $startp = 0.00;
                     $endp = 0.00;
@@ -217,19 +197,18 @@ class SearchController extends Controller
 
                 unset($price_array);
 
-                $price_array = array();
+                $price_array = [];
 
-                $url = url('shop?category=' . $searchresult
-                        ->category->id . '&sid=' . $searchresult
-                        ->subcategory->id . '&start=' . $startp * $conversion_rate . '&end=' . $endp * $conversion_rate . '&keyword=' . $request->search);
+                $url = url('shop?category='.$searchresult
+                        ->category->id.'&sid='.$searchresult
+                        ->subcategory->id.'&start='.$startp * $conversion_rate.'&end='.$endp * $conversion_rate.'&keyword='.$request->search);
 
-                    $result[] = ['id' => $searchresult->id, 'value' => $request->search . ' in ' . $searchresult
-                            ->subcategory->title, 'img' => $imageurl . '/' . $searchresult->subvariants[0]
-                            ->variantimages['main_image'], 'url' => $url];
-                }
-
+                $result[] = ['id' => $searchresult->id, 'value' => $request->search.' in '.$searchresult
+                            ->subcategory->title, 'img' => $imageurl.'/'.$searchresult->subvariants[0]
+                            ->variantimages['main_image'], 'url' => $url, ];
             }
+        }
 
-            return response()->json($result);
+        return response()->json($result);
     }
 }

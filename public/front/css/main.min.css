@@ -1519,7 +1519,7 @@ a {
 }
 
 header {
-    background: #906ee6
+    background: #f3f3f3
 }
 
 .main-header {
@@ -4767,7 +4767,7 @@ header {
 .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn span {
     display: block;
     font-weight: 400;
-    color: #666;
+    color: #fff;
     text-align: center
 }
 
@@ -5778,8 +5778,7 @@ header {
     }
     .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn button {
         background: #906ee6;
-        color: #333;
-        padding: 12px 25px;
+        color: #fff padding: 12px 25px;
         font-size: 15px;
         letter-spacing: 1px;
         font-weight: 500
@@ -5870,7 +5869,7 @@ header {
     }
     .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn button {
         background: #906ee6;
-        color: #333;
+        color: #fff;
         padding: 12px 25px;
         font-size: 15px;
         letter-spacing: 1px;
@@ -6186,7 +6185,7 @@ header {
     }
     .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn button {
         background: #906ee6;
-        color: #333;
+        color: #fff;
         padding: 12px 25px;
         font-size: 15px;
         letter-spacing: 1px;
@@ -6392,7 +6391,7 @@ header {
     }
     .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn button {
         background: #906ee6;
-        color: #333;
+        color: #fff;
         padding: 12px 25px;
         font-size: 15px;
         letter-spacing: 1px;
@@ -11074,7 +11073,7 @@ header {
 
 .checkout-btn {
     background: #906ee6;
-    color: #333;
+    color: #fff;
     padding: 12px 25px;
     font-size: 20px
 }
@@ -12362,7 +12361,7 @@ header {
     }
     .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn button {
         background: #906ee6;
-        color: #333;
+        color: #fff;
         padding: 12px 25px;
         font-size: 15px;
         letter-spacing: 1px;
@@ -12456,7 +12455,7 @@ header {
     }
     .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn button {
         background: #906ee6;
-        color: #333;
+        color: #fff;
         padding: 12px 25px;
         font-size: 15px;
         letter-spacing: 1px;
@@ -12774,7 +12773,7 @@ header {
     }
     .shopping-cart .cart-shopping-total table tbody tr td .cart-checkout-btn button {
         background: #906ee6;
-        color: #333;
+        color: #fff;
         padding: 12px 25px;
         font-size: 15px;
         letter-spacing: 1px;

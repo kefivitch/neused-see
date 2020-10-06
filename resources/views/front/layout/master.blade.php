@@ -53,7 +53,7 @@
   <meta name="csrf-token" content="{{csrf_token()}}">
   <!-- Theme Header Color -->
   <meta name="theme-color" content="#157ED2">
-  <title>@yield('title') {{ $title}} - {{ $seoset->metadata_des }} </title>
+  <title>@yield('title') {{$title}} - {{ $seoset->metadata_des }} </title>
   <!-- Google Fonts -->
   <link href="//fonts.googleapis.com/css?family=Barlow:200,300,300i,400,400i,500,500i,600,700,800" rel="stylesheet">
   <link href='//fonts.googleapis.com/css?family=Roboto:300,400,500,700' rel='stylesheet' type='text/css'>
@@ -137,9 +137,9 @@
     </div>
   </div> --}}
   <!-- form submit preloader -->
-  <div class="display-none preL">
+  {{-- <div class="display-none preL">
     <div class="display-none preloader3"></div>
-  </div>
+  </div> --}}
 
   <!-- ============================================== HEADER ============================================== -->
   <header class="header-style-1">

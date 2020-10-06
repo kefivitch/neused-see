@@ -36,10 +36,11 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Session;
 use Image;
 use Mail;
 use Response;
-use Session;
+//use Session;
 use Share;
 use View;
 

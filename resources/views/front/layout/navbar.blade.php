@@ -19,18 +19,17 @@
                 
                 $pirmarycategories = App\Category::
                                      join('products', function ($join) {
-                                        $join->on('products.id', '=', 'categories.id')->where('products.status','1');
+                                        $join->on('products.category_id', '=', 'categories.id')->where('products.status','1');
                                      })
                                      ->leftjoin('users', function ($join) {
                                         $join->on('products.vender_id', '=', 'users.id')->where('users.status','1');
                                      })
                                      ->select('categories.*')->where('categories.status','=','1')->get();
-                               
               }else{
                 
                 $pirmarycategories = App\Category::
                                      join('products', function ($join) {
-                                        $join->on('products.id', '=', 'categories.id')->where('products.status','1');
+                                        $join->on('products.category_id', '=', 'categories.id')->where('products.status','1');
                                      })
                                      ->join('users', function ($join) {
                                         $join->on('products.vender_id', '=', 'users.id')->where('users.status','1')->where('users.role_id','!=','v');
