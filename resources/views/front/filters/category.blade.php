@@ -1315,8 +1315,9 @@ else
                                    ->leftjoin('users', function ($join) {
                                       $join->on('products.vender_id', '=', 'users.id')->where('users.status','1');
                                    })
+                                   ->where('products.is_new',1)
                                    ->select('categories.*')->where('categories.status','=','1')->get();
-                             
+                                              
               }else{
                 
                 $pirmarycategories = App\Category::
@@ -1327,10 +1328,12 @@ else
                                         $join->on('products.vender_id', '=', 'users.id')->where('users.status','1')->where('users.role_id','!=','v');
                                     })
                                     ->orderBy('position','ASC')->select('categories.*')->where('categories.status','=','1')->get();
+                
               }
+
             @endphp
             @foreach($pirmarycategories as $item)
-
+                                  
               @if($item->products->count()>0)
                   @foreach($item->products as $old)
 
