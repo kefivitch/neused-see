@@ -20,38 +20,23 @@ use App\Shipping;
 use App\Store;
 use App\Subcategory;
 use App\TaxClass;
+use App\usedProductImage;
+use App\User;
 use App\UserReview;
-use Auth;
+//use Auth;
 use Avatar;
 use DataTables;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth as Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Image;
 use Rap2hpoutre\FastExcel\FastExcel;
-use Session;
 
-/*==========================================
-=            Author: Media City            =
-Author URI: https://mediacity.co.in
-=            Author: Media City            =
-=            Copyright (c) 2020            =
-==========================================*/
-
-class ProductController extends Controller
+class usedProductsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function allvariants($id)
-    {
-        $pro = Product::findOrFail($id);
-
-        return view('admin.product.allvar', compact('pro'));
-    }
-
     public function storeSpecs(Request $request, $id)
     {
         $product = Product::find($id);
@@ -117,9 +102,9 @@ class ProductController extends Controller
             $pro = Product::find($checked);
 
             if ($pro) {
-                $provar = AddProductVariant::where('pro_id', $checked)->first();
+                // $provar = AddProductVariant::where('pro_id', $checked)->first();
 
-                $subvar = AddSubVariant::where('pro_id', $checked)->get();
+                // $subvar = AddSubVariant::where('pro_id', $checked)->get();
 
                 DB::table('add_sub_variants')
                     ->where('pro_id', $checked)->delete();
@@ -602,19 +587,33 @@ class ProductController extends Controller
     {
         $lang = Session::get('changed_language');
 
-        $products = DB::table('products')->join('stores', 'stores.id', '=', 'products.store_id')
+        $products = DB::table('products')->join('users', 'users.id', '=', 'products.vender_id')
             ->join('brands', 'brands.id', '=', 'products.brand_id')
             ->join('categories', 'categories.id', '=', 'products.category_id')
             ->join('subcategories', 'subcategories.id', '=', 'products.child')
-            ->leftJoin('add_sub_variants', function ($join) {
-                $join->on('products.id', '=', 'add_sub_variants.pro_id')->where('add_sub_variants.def', '=', '1');
-            })
-            ->leftJoin('variant_images', 'variant_images.var_id', '=', 'add_sub_variants.id')
             ->leftJoin('grandcategories', 'grandcategories.id', '=', 'products.grand_id')
-            ->select('products.id as proid', 'products.category_id as category_id', FacadesDB::raw("JSON_EXTRACT(products.name, '$.$lang') as productname"), 'products.featured as featured', 'products.status as status', 'products.created_at as createdat', 'products.updated_at as updateat', 'stores.name as storename', 'brands.name as brandname', FacadesDB::raw("JSON_EXTRACT(categories.title, '$.$lang') as catname"), FacadesDB::raw("JSON_EXTRACT(subcategories.title, '$.$lang') as subcatname"), FacadesDB::raw("JSON_EXTRACT(grandcategories.title, '$.$lang') as childname"), 'variant_images.main_image as mainimage', 'products.price as price', 'products.vender_price as vender_price', 'products.tax_r as tax_r', 'products.vender_offer_price as vender_offer_price', 'products.offer_price as offer_price', 'add_sub_variants.main_attr_id as main_attr_id', 'add_sub_variants.main_attr_value as main_attr_value')
+            ->leftJoin('used_product_images', 'used_product_images.pro_id', '=', 'products.id')
+            ->select(
+                'products.id as proid',
+                'products.category_id as category_id',
+                FacadesDB::raw("JSON_EXTRACT(products.name, '$.$lang') as productname"),
+                'products.featured as featured', 'products.status as status',
+                'products.created_at as createdat', 'products.updated_at as updateat',
+                'users.name as ownername',
+                'brands.name as brandname',
+                FacadesDB::raw("JSON_EXTRACT(categories.title, '$.$lang') as catname"),
+                FacadesDB::raw("JSON_EXTRACT(subcategories.title, '$.$lang') as subcatname"),
+                FacadesDB::raw("JSON_EXTRACT(grandcategories.title, '$.$lang') as childname"),
+                'products.price as price',
+                'used_product_images.main_image as mainimage'
+                /*'products.vender_price as vender_price',
+                'products.vender_offer_price as vender_offer_price'*/
+            )
             ->where('products.deleted_at', '=', null)
+            ->where('products.is_used', '=', 1)
+            //->where('products.is_new',"=",0)
             ->get();
-
+        //dd($products);
         if ($request->ajax()) {
             return DataTables::of($products)
                 ->editColumn('checkbox', function ($row) {
@@ -630,7 +629,7 @@ class ProductController extends Controller
                     $image = '';
 
                     if ($row->mainimage) {
-                        $image .= '<img title='.str_replace('"', '', $row->productname).' class="pro-img" src='.url('variantimages/thumbnails/'.$row->mainimage).' alt='.$row->mainimage.'>';
+                        $image .= '<img title='.str_replace('"', '', $row->productname).' class="pro-img" src='.url('usedProducts/thumbnails/'.$row->mainimage).' alt='.$row->mainimage.'>';
                     } else {
                         $image = '<img title="Make a variant first !" src="'.Avatar::create(str_replace('"', '', $row->productname))->toBase64().'"/>';
                     }
@@ -640,12 +639,12 @@ class ProductController extends Controller
                 ->addColumn('prodetail', function ($row) {
                     $html = '';
                     $html .= '<p><b>'.str_replace('"', '', $row->productname).'</b></p>';
-                    $html .= "<p><b>Store:</b> $row->storename</p>";
+                    $html .= "<p><b>Owner:</b> $row->ownername</p>";
                     $html .= "<p><b>Brand:</b> $row->brandname</p>";
 
                     return $html;
                 })
-                ->editColumn('price', 'admin.product.dtablecolumn.price')
+                //->editColumn('price', function ($row) { return $row->price;})
                 ->addColumn('catdtl', function ($row) {
                     $catdtl = '';
                     $catdtl .= '<p><i class="fa fa-angle-double-right"></i> '.str_replace('"', '', $row->catname).'</p>';
@@ -660,15 +659,15 @@ class ProductController extends Controller
 
                     return $catdtl;
                 })
-                ->editColumn('featured', 'admin.product.dtablecolumn.featured')
-                ->editColumn('status', 'admin.product.dtablecolumn.status')
-                ->addColumn('history', 'admin.product.dtablecolumn.history')
-                ->editColumn('action', 'admin.product.dtablecolumn.action')
+                ->editColumn('featured', 'admin.usedProduct.dtablecolumn.featured')
+                ->editColumn('status', 'admin.usedProduct.dtablecolumn.status')
+                ->addColumn('history', 'admin.usedProduct.dtablecolumn.history')
+                ->editColumn('action', 'admin.usedProduct.dtablecolumn.action')
                 ->rawColumns(['checkbox', 'image', 'prodetail', 'price', 'catdtl', 'featured', 'status', 'history', 'action'])
                 ->make(true);
         }
 
-        return view('admin.product.index');
+        return view('admin.usedProduct.index');
     }
 
     /**
@@ -711,11 +710,37 @@ class ProductController extends Controller
         $categorys = Category::all();
         $brands = Brand::all();
 
-        $stores = \DB::table('stores')->join('users', 'stores.user_id', '=', 'users.id')->select('stores.name as storename', 'users.name as owner', 'stores.id as storeid')->get();
+        $users = User::where('status', 1)->get();
 
         $product = Product::all();
 
-        return view('admin.product.create', compact('categorys', 'stores', 'brands', 'product'));
+        return view('admin.usedProduct.create', compact('categorys', 'users', 'brands', 'product'));
+    }
+
+    public function saveImages(Request $request, $image)
+    {
+        $path = public_path().'/usedProducts';
+
+        $thumbpath = public_path().'/usedProducts/thumbnails';
+
+        if ($file = $request->file($image)) {
+            $request->validate([
+                $image => 'mimes:png,jpg,jpeg',
+            ]);
+
+            $name = 'usedProd_'.time().str_random(10).'.'.$file->getClientOriginalExtension();
+            $img = Image::make($file);
+
+            $img->save($path.'/'.$name, 95);
+
+            $img->resize(300, 300, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+
+            $img->save($thumbpath.'/'.$name, 95);
+
+            return $name;
+        }
     }
 
     /**
@@ -725,12 +750,28 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $this->validate($request, ['name' => 'required', 'price' => 'required', 'brand_id' => 'required|not_in:0', 'category_id' => 'required|not_in:0', 'child' => 'required|not_in:0',
+        //dd($request);
+        $data = $this->validate($request,
+            [
+                'name' => 'required|string|max:255',
+                'brand_id' => 'required|not_in:0|exists:brands,id',
+                'category_id' => 'required|not_in:0|exists:categories,id',
+                'child' => 'required|not_in:0|exists:subcategories,id',
+                'grand_id' => 'required|not_in:0|exists:grandcategories,id',
+                'price' => 'required|numeric',
+                'user_id' => 'required|exists:users,id',
+                'key_features' => 'string',
+                'des' => 'string',
+                'image1' => 'required',
+                'image2' => 'required',
         ], [
-            'name.required' => 'Product Name is needed', 'price.required' => 'Price is needed', 'brand_id.required' => 'Please Choose Brand',
+            'name.required' => 'Product Name is needed',
+            'price.required' => 'Price is needed',
+            'brand_id.required' => 'Please Choose Brand',
         ]);
 
         $input = $request->all();
+        $input['offer_price'] = $input['price'];
         $currency_code = Genral::first()->currency_code;
 
         if (isset($request->codcheck)) {
@@ -743,15 +784,6 @@ class ProductController extends Controller
             $input['featured'] = '1';
         } else {
             $input['featured'] = '0';
-        }
-
-        if (isset($request->tax_manual)) {
-            $request->validate(['tax_r' => 'required|numeric', 'tax_name' => 'string|required|min:1']);
-
-            $input['tax'] = 0;
-        } else {
-            $input['tax_r'] = null;
-            $input['tax_name'] = null;
         }
 
         if (isset($request->free_shipping)) {
@@ -861,16 +893,22 @@ class ProductController extends Controller
             $input['return_avbl'] = 0;
             $input['return_policy'] = 0;
         }
+        if ($request->user_id) {
+            $input['vender_id'] = $request->user_id;
+        } else {
+            $input['vender_id'] = Auth::user()->id;
+        }
 
-        $input['vender_id'] = Auth::user()->id;
-        $findstore = Store::find($request->store_id);
+        $findstore = null;
         $input['w_d'] = $request->w_d;
         $input['w_my'] = $request->w_my;
         $input['w_type'] = $request->w_type;
         $input['key_features'] = clean($request->key_features);
         $input['des'] = clean($request->des);
         $input['grand_id'] = isset($request->grand_id) ? $request->grand_id : 0;
-        $input['vender_id'] = $findstore->user->id;
+        // $input['vender_id'] = $findstore->user->id;
+        $input['is_used'] = 1;
+        $input['is_new'] = 0;
         $data = Product::create($input);
 
         $data->save();
@@ -880,8 +918,19 @@ class ProductController extends Controller
         $relsetting->pro_id = $data->id;
         $relsetting->status = '0';
         $relsetting->save();
+        $main_image = $this->saveImages($request, 'image1');
+        usedProductImage::create([
+        'image1' => $main_image,
+        'image2' => $this->saveImages($request, 'image2'),
+        'image3' => $this->saveImages($request, 'image3'),
+        'image4' => $this->saveImages($request, 'image4'),
+        'image5' => $this->saveImages($request, 'image5'),
+        'image6' => $this->saveImages($request, 'image6'),
+        'main_image' => $main_image,
+        'pro_id' => $data->id,
+       ]);
 
-        return redirect()->route('add.var', $data->id)->with('success', 'Product created !  create a variant now ');
+        return redirect()->route('used-products.index')->with('success', 'Product created ! ');
     }
 
     public function addSale(Request $request)
@@ -905,18 +954,17 @@ class ProductController extends Controller
         $products = Product::find($id);
         $categorys = Category::all();
 
-        $stores = \DB::table('stores')->join('users', 'stores.user_id', '=', 'users.id')->select('stores.name as storename', 'users.name as owner', 'stores.id as storeid')->get();
+        $owners = User::all();
 
         $faqs = FaqProduct::where('pro_id', $id)->get();
         $cat_id = Product::where('id', $id)->first();
-        $child = Subcategory::where('parent_cat', $cat_id->category_id)
-            ->get();
-        $realateds = RealatedProduct::get();
+        $child = Subcategory::where('parent_cat', $cat_id->category_id)->get();
+        // $realateds = RealatedProduct::get();
         $rel_setting = $products->relsetting;
         $grand = Grandcategory::where('subcat_id', $cat_id->child)
             ->get();
 
-        return view('admin.product.edit_tab', compact('rel_setting', 'products', 'categorys', 'stores', 'brands', 'faqs', 'child', 'grand', 'realateds'));
+        return view('admin.usedProduct.edit_tab', compact('rel_setting', 'products', 'categorys', 'owners', 'brands', 'faqs', 'child', 'grand'));
     }
 
     /**
@@ -926,11 +974,16 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // dd('hello');
         $products = Product::findOrFail($id);
         $currency_code = Genral::first()->currency_code;
-        $data = $this->validate($request, ['name' => 'required', 'price' => 'required|numeric', 'brand_id.required' => 'Please Choose Brand',
+        $data = $this->validate($request, [
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'brand_id.required' => 'Please Choose Brand',
         ], [
-            'name.required' => 'Product Name is needed', 'price.required' => 'Price is needed',
+            'name.required' => 'Product Name is needed',
+            'price.required' => 'Price is needed',
         ]);
 
         $product = Product::findOrFail($id);
@@ -949,15 +1002,9 @@ class ProductController extends Controller
             $input['featured'] = '0';
         }
 
-        if (isset($request->tax_manual)) {
-            $request->validate(['tax_r' => 'required|numeric', 'tax_name' => 'string|required|min:1']);
-
-            $input['tax'] = 0;
-        } else {
-            $input['tax_r'] = null;
-            $input['tax_name'] = null;
-            $input['tax'] = $request->tax;
-        }
+        $input['tax_r'] = null;
+        $input['tax_name'] = null;
+        $input['tax'] = $request->tax;
 
         $input['vender_price'] = $request->price;
         $input['vender_offer_price'] = $request->offer_price;
@@ -985,13 +1032,12 @@ class ProductController extends Controller
                 } else {
                     $taxrate = $commission->rate;
                     $price1 = $input['price'];
-                    $price2 = $input['offer_price'];
                     $tax1 = $priceMinusTax = ($price1 * (($taxrate / 100)));
-                    $tax2 = $priceMinusTax = ($price2 * (($taxrate / 100)));
+                    //$tax2 = $priceMinusTax = ($price2 * (($taxrate / 100)));
                     $price = $input['price'] + $tax1;
-                    $offer = $input['offer_price'] + $tax2;
+                    //$offer = $input['offer_price'] + $tax2;
                     $input['price'] = $price;
-                    $input['offer_price'] = $offer;
+                    //$input['offer_price'] = $offer;
                     if (!empty($tax2)) {
                         $input['commission_rate'] = $tax2;
                     } else {
@@ -1071,7 +1117,7 @@ class ProductController extends Controller
             $input['free_shipping'] = '0';
         }
 
-        $findstore = Store::find($request->store_id);
+        //$findstore = Store::find($request->store_id);
 
         $input['price_in'] = $currency_code;
         $input['w_d'] = $request->w_d;
@@ -1080,8 +1126,30 @@ class ProductController extends Controller
         $input['key_features'] = clean($request->key_features);
         $input['des'] = clean($request->des);
         $input['grand_id'] = isset($request->grand_id) ? $request->grand_id : 0;
-        $input['vender_id'] = $findstore->user->id;
+        $input['vender_id'] = $input['owner_id'];
         $product->update($input);
+
+        if (isset($request->image1)) {
+            $this->saveImages($request, 'image1');
+        }
+        if (isset($request->image2)) {
+            $this->saveImages($request, 'image2');
+        }
+        if (isset($request->image3)) {
+            $this->saveImages($request, 'image3');
+        }
+        if (isset($request->image3)) {
+            $this->saveImages($request, 'image3');
+        }
+        if (isset($request->image4)) {
+            $this->saveImages($request, 'image4');
+        }
+        if (isset($request->image5)) {
+            $this->saveImages($request, 'image5');
+        }
+        if (isset($request->image6)) {
+            $this->saveImages($request, 'image6');
+        }
 
         return back()->with('updated', 'Product has been updated !');
     }

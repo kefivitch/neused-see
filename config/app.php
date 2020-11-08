@@ -223,14 +223,15 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Datatables' => Yajra\Datatables\Facades\Datatables::class,
-         'Image' => 'Intervention\Image\Facades\Image',
-         'Stripe' => Cartalyst\Stripe\Laravel\Facades\Stripe::class,
-         'Payment' => Tzsk\Payu\Facade\Payment::class,
-         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
-         'Alert' => UxWeb\SweetAlert\SweetAlert::class,
-         'Avatar'    => Laravolt\Avatar\Facade::class,
-         'Share' => Jorenvh\Share\ShareFacade::class,
-        'HTMLMin' => HTMLMin\HTMLMin\Facades\HTMLMin::class
+        'Image' => 'Intervention\Image\Facades\Image',
+        'Stripe' => Cartalyst\Stripe\Laravel\Facades\Stripe::class,
+        'Payment' => Tzsk\Payu\Facade\Payment::class,
+        'Socialite' => Laravel\Socialite\Facades\Socialite::class,
+        'Alert' => UxWeb\SweetAlert\SweetAlert::class,
+        'Avatar'    => Laravolt\Avatar\Facade::class,
+        'Share' => Jorenvh\Share\ShareFacade::class,
+        'HTMLMin' => HTMLMin\HTMLMin\Facades\HTMLMin::class,
+        'Str' => Illuminate\Support\Str::class,
     ],
 
     'debug_hide' => [

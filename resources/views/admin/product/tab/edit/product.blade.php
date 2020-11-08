@@ -1,6 +1,6 @@
 <br>
 <form id="demo-form2" method="post" enctype="multipart/form-data" @if(!empty($products))
-  action="{{url('admin/products/'.$products->id)}}" @endif data-parsley-validate
+  action="{{url('admin/used-products/'.$products->id)}}" @endif data-parsley-validate
   class="form-horizontal form-label-left">
   {{csrf_field()}}
   {{ method_field('PUT') }}
@@ -80,34 +80,188 @@
       <label>
         Select Store:
       </label>
-      <select required="" name="store_id" class="form-control select2">
+      <select required="" name="owner_id" class="form-control select2">
 
 
-        @foreach($stores as $store)
-        <optgroup label="Store Owner • {{ $store->owner }}">
-          <option {{ $products->store_id == $store->storeid ? "selected" : "" }} value="{{ $store->storeid }}">
-            {{ $store->storename }}</option>
-        </optgroup>
+        @foreach($owners as $owner)
+        
+          <option {{ $products->user_id == $owner->id ? "selected" : "" }} value="{{ $owner->id }}">
+            {{ $owner->name }}</option>
+        
         @endforeach
 
 
       </select>
-      <small class="txt-desc">(Please Choose Store Name )</small>
+      <small class="txt-desc">(Please Choose Owner Name )</small>
     </div>
 
 
     <div class="margin-top-15 col-md-12">
       <label for="first-name"> Key Features :
       </label>
-      <textarea class="form-control" id="editor2" name="key_features">{!! $products->key_features !!} 
-                         </textarea>
+      <textarea class="form-control" id="editor2" name="key_features">{!! $products->key_features !!} </textarea>
     </div>
 
     <div class="margin-top-15 col-md-12">
       <label for="first-name">Description:</label>
-      <textarea id="editor1" value="{{old('des' ?? '')}}" name="des" class="form-control">{!! $products->des !!} 
-                         </textarea>
+      <textarea id="editor1" value="{{old('des' ?? '')}}" name="des" class="form-control">{!! $products->des !!}</textarea>
       <small class="txt-desc">(Please Enter Product Description)</small>
+    </div>
+
+    {{-- Images --}}
+    <div class="margin-top-15"><br>
+      <label style="padding-top: 10px;padding-left:10px;">
+        Images:
+      </label><br>
+      <div class="col-md-4">
+        <div class="panel panel-primary bg-primary height-shadow">
+          <p class="padding5-15">Select Image 1</p>
+
+          <div align="center" class="panel-body padding-0">
+
+            <img id="preview1" align="center" width="150" height="150" src="{{ url('images/imagechoosebg.png') }}"
+              alt="" class="margin-top-5 margin-bottom-10">
+
+
+          </div>
+
+          <div class="file-upload heyx">
+            <div class="file-select">
+              <div class="file-select-button" id="fileName">Choose File</div>
+              <div class="file-select-name" id="noFile">No file chosen...</div>
+              <input required name="image1" type="file" name="chooseFile" id="image1">
+            </div>
+          </div>
+
+
+        </div>
+
+      </div>
+
+      <div class="col-md-4">
+        <div class="panel panel-primary bg-primary height-shadow">
+          <p class="padding5-15">Select Image 2</p>
+
+          <div align="center" class="panel-body padding-0">
+
+            <img id="preview2" align="center" width="150" height="150" src="{{ url('images/imagechoosebg.png') }}"
+              alt="" class="margin-top-5 margin-bottom-10">
+
+
+          </div>
+
+          <div class="file-upload2 heyx">
+            <div class="file-select2">
+              <div class="file-select-button2" id="fileName2">Choose File</div>
+              <div class="file-select-name2" id="noFile2">No file chosen...</div>
+              <input required name="image2" type="file" name="chooseFile" id="image2">
+            </div>
+          </div>
+
+
+        </div>
+
+      </div>
+
+      <div class="col-md-4">
+        <div class="panel panel-primary bg-primary height-shadow">
+          <p class="padding5-15">Select Image 3</p>
+
+          <div align="center" class="panel-body padding-0">
+
+            <img id="preview3" align="center" width="150" height="150" src="{{ url('images/imagechoosebg.png') }}"
+              alt="" class="margin-top-5">
+
+
+          </div>
+
+          <div class="file-upload3 heyx">
+            <div class="file-select3">
+              <div class="file-select-button3" id="fileName3">Choose File</div>
+              <div class="file-select-name3" id="noFile3">No file chosen...</div>
+              <input name="image3" type="file" name="chooseFile" id="image3">
+            </div>
+          </div>
+
+
+        </div>
+
+      </div>
+    </div>
+    <div class="margin-top-15">
+      <div class="col-md-4">
+
+        <div class="panel panel-primary bg-primary height-shadow">
+          <p class="padding5-15">Select Image 4</p>
+
+          <div align="center" class="panel-body padding-0">
+
+            <img id="preview4" align="center" width="150" height="150" src="{{ url('images/imagechoosebg.png') }}"
+              alt="" class="margin-top-5 margin-bottom-10">
+
+
+          </div>
+
+          <div class="file-upload4 heyx">
+            <div class="file-select4">
+              <div class="file-select-button4" id="fileName4">Choose File</div>
+              <div class="file-select-name4" id="noFile4">No file chosen...</div>
+              <input name="image4" type="file" name="chooseFile" id="image4">
+            </div>
+          </div>
+
+
+        </div>
+
+      </div>
+
+      <div class="col-md-4">
+
+        <div class="panel panel-primary bg-primary height-shadow">
+          <p class="padding5-15">Select Image 5</p>
+
+          <div align="center" class="panel-body padding-0">
+
+            <img id="preview5" align="center" width="150" height="150" src="{{ url('images/imagechoosebg.png') }}"
+              alt="" class="margin-top-5 margin-bottom-10">
+
+
+          </div>
+
+          <div class="file-upload5 heyx">
+            <div class="file-select5">
+              <div class="file-select-button5" id="fileName5">Choose File</div>
+              <div class="file-select-name5" id="noFile5">No file chosen...</div>
+              <input name="image5" type="file" name="chooseFile" id="image5">
+            </div>
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <div class="col-md-4">
+
+        <div class="panel panel-primary bg-primary height-shadow">
+          <p class="padding5-15">Select Image 6</p>
+
+          <div align="center" class="panel-body padding-0">
+
+            <img id="preview6" align="center" width="150" height="150" src="{{ url('images/imagechoosebg.png') }}"
+              alt="" class="margin-top-5 margin-bottom-10">
+          </div>
+          <div class="file-upload6 heyx">
+            <div class="file-select6">
+              <div class="file-select-button6" id="fileName6">Choose File</div>
+              <div class="file-select-name6" id="noFile6">No file chosen...</div>
+              <input name="image6" type="file" name="chooseFile" id="image6">
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="margin-top-15 col-md-4">
@@ -201,7 +355,7 @@
     </div>
 
 
-    <div class="margin-top-15 col-md-6">
+    <div class="margin-top-15 col-md-12">
 
       <label>
         Price: <span class="required">*</span>
@@ -213,62 +367,7 @@
       <small class="text-muted"><i class="fa fa-question-circle"></i> Don't put comma whilt entering PRICE</small>
 
     </div>
-
-    <div class="margin-top-15 col-md-6">
-
-      <label>
-        Offer Price:
-        <span class="help-block">(Offer Price you entering is in {{ $genrals_settings->currency_code }})</span>
-      </label>
-      <input title="Offer price Format must be in this format : 200 or 200.25" pattern="[0-9]+(\.[0-9][0-9]?)?"
-        type="text" id="first-name" name="offer_price" class="form-control"
-        value="{{$products->vender_offer_price ?? ''}}">
-      <br>
-      <small class="text-muted"><i class="fa fa-question-circle"></i> Don't put comma whilt entering OFFER PRICE</small>
-
-    </div>
-
-    <div class="{{ $products->tax_r !='' ? "" : 'display-none' }}" id="manual_tax">
-
-      <div class="margin-top-15 col-md-6">
-        <label>Tax Applied (In %) <span class="required">*</span></label>
-        <div class="input-group">
-          <input {{ $products->tax_r != '' ? "required" : "" }} value="{{ $products->tax_r }}" id="tax_r" type="number"
-            min="0" class="form-control" name="tax_r" placeholder="0">
-          <span class="input-group-addon">%</span>
-        </div>
-      </div>
-
-      <div class="margin-top-15 col-md-6">
-        <label>Tax Name: <span class="required">*</span></label>
-        <input {{ $products->tax_r != '' ? "required" : "" }} type="text" id="tax_name" class="form-control"
-          name="tax_name" title="Tax rate must without % sign" placeholder="Enter Tax Name"
-          value="{{ $products->tax_name }}">
-      </div>
-
-    </div>
-
-
-    <div class="margin-top-15 col-md-12">
-      <div class="{{ $products->tax_r != ''? 'display-none' : "" }}" id="tax_class">
-        <label>
-          Tax Classes:
-        </label>
-        <select {{ $products->tax_r == '' ? "required" : "" }} name="tax" class="form-control">
-          <option value="">Please Choose..</option>
-          @foreach(App\TaxClass::all() as $tax)
-          <option value="{{$tax->id}}"
-            @if(!empty($products)){{ $tax->id == $products->tax ? 'selected="selected"' : '' }}@endif>{{$tax->title}}
-          </option>
-          @endforeach
-        </select>
-        <small class="txt-desc">(Please Choose Yes Then Start Sale This Product )</small>
-        <img src="{{(url('images/info.png'))}}" data-toggle="modal" data-target="#taxmodal" class="height-15"><br>
-
-      </div>
-    </div>
-
-
+    
     <div class="margin-top-15 col-md-4">
 
 

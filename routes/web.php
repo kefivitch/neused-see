@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
  */
-
 
 // Route::get('/dontuse',function(){
 //   $images = \DB::table('variant_images')->get();
@@ -25,15 +25,20 @@ use Illuminate\Support\Facades\Route;
 //   }
 // });
 
-
+Route::group(['domain' => 'used.neused.test'], function () {
+    Route::group(['middleware' => ['maintainence_mode']], function () {
+        Route::group(['middleware' => ['web', 'switch_lang', 'isActive', 'IsInstalled']], function () {
+            Route::get('/', 'used\MainController@index');
+        });
+    });
+});
 
 Route::group(['middleware' => ['maintainence_mode']], function () {
+    Route::post('/subscribe/for/product/stock/{varid}', 'ProductNotifyController@post')->name('pro.stock.subs');
 
-    Route::post('/subscribe/for/product/stock/{varid}','ProductNotifyController@post')->name('pro.stock.subs');
+    Route::post('/ota/update/proccess', 'OtaUpdateController@update')->middleware('is_admin')->name('update.proccess');
 
-    Route::post('/ota/update/proccess','OtaUpdateController@update')->middleware('is_admin')->name('update.proccess');
-
-    Route::get('/ota/update','OtaUpdateController@getotaview')->middleware('is_admin');
+    Route::get('/ota/update', 'OtaUpdateController@getotaview')->middleware('is_admin');
 
     Route::view('image/conversion', 'ota.imageconversion')->middleware('is_admin');
 
@@ -44,7 +49,6 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
     Route::post('/menu/sort', 'MenuController@sort')->name('menu.sort');
 
     Route::group(['middleware' => ['web', 'switch_lang', 'isActive', 'IsInstalled']], function () {
-
         Route::get('/verify', 'Auth\RegisterController@getotpview')->name('verify.otp');
 
         Route::get('resendotp', 'Auth\RegisterController@resendotp')->name('resend.otp');
@@ -67,12 +71,9 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
         Route::post('/admin/secure/login', 'GuestController@adminLogin')->name('admin.login');
 
-        /**/
-
         /*Custom Seller Login*/
         Route::get('/seller/login', 'GuestController@sellerloginview')->name('seller.login.page');
         Route::post('/seller/secure/login', 'GuestController@dosellerlogin')->name('seller.login.do');
-        /**/
 
         /*Login Routes*/
 
@@ -96,12 +97,10 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         /*end*/
 
         Route::post('cart/applycoupon', 'CouponApplyController@apply')->name('apply.cpn');
-
     });
 
-//Installer Routes //
+    //Installer Routes //
     Route::group(['middleware' => ['web', 'switch_lang']], function () {
-
         Route::get('/changelang', 'GuestController@changelang')->name('changelang');
 
         Route::post('/cart/removecoupan/{cpnid}', 'CouponApplyController@remove')->name('removecpn');
@@ -113,7 +112,6 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('choose_city', 'GuestController@choose_city');
 
         Route::get('/offline', 'GuestController@offlineview');
-
     });
 
     Route::get('/performcurrencyoperation', 'InstallerController@currencyOperation');
@@ -152,7 +150,6 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
     Route::get('/product/{id}/all/reviews', 'ProductController@allreviews')->name('allreviews');
 
     Route::group(['middleware' => ['switch_lang', 'web', 'auth', 'IsInstalled']], function () {
-
         Route::get('/mywallet', 'WalletController@showWallet')->name('user.wallet.show');
 
         Route::post('/wallet/payment', 'WalletController@choosepaymentmethod')->name('wallet.choose.paymethod');
@@ -281,14 +278,12 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('/getmyinvoice/{id}', 'OrderController@getUserInvoice')->name('user.get.invoice');
 
         Route::post('/order/complete/cancel/{id}', 'FullOrderCancelController@cancelOrder')->name('full.order.cancel');
-
     });
 
     Route::get('/onloadvariant/{id}', 'AddSubVariantController@ajaxGet2');
     Route::get('/variantnotfound/{id}', 'AddSubVariantController@getDefaultforFailed');
 
     Route::group(['middleware' => ['web', 'IsInstalled', 'switch_lang']], function () {
-
         Route::get('login/{service}', 'Auth\LoginController@redirectToProvider')->name('sociallogin');
         Route::get('login/{service}/callback', 'Auth\LoginController@handleProviderCallback')->name('social.login.callback');
 
@@ -297,7 +292,8 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('pincodeforaddress/', 'GuestController@getPinAddress')->name('pincodeforaddress');
 
         Route::get('/order-placed-successfully', function () {
-            require_once ('../app/Http/Controllers/price.php');
+            require_once '../app/Http/Controllers/price.php';
+
             return view('home.thankyou', compact('conversion_rate'));
         })->name('order.done');
 
@@ -329,9 +325,9 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
         Route::get('filter/variant/', 'MainController@variantfilter');
 
-//  Front End Controller
+        //  Front End Controller
 
-        Route::get("pincode-check", "PinCodController@pincode_check");
+        Route::get('pincode-check', 'PinCodController@pincode_check');
 
         Route::get('/', 'MainController@index');
         Route::get('cat/{id}', 'MainController@cat');
@@ -353,7 +349,7 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('create_deal/', 'CartController@create_deal');
         Route::get('addtocart/{id}', 'CartController@index');
         Route::get('remove_cart/{id}', 'CartController@remove_cart')->name('rm.session.cart');
-        Route::get('remove_table_cart/{id}', 'CartController@remove_table_cart')->name('rm.cart');;
+        Route::get('remove_table_cart/{id}', 'CartController@remove_table_cart')->name('rm.cart');
         Route::post('update_table_cart/{id}', 'CartController@update_table_cart');
         Route::post('update_cart/{id}', 'CartController@update_cart');
         Route::get('update_cart/{id}', 'CartController@update_cart');
@@ -369,7 +365,7 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('rentdays/', 'CartController@rent_update')->name('rentdays');
         Route::get('test/', 'CartController@test');
         Route::get('search/', 'MainController@search');
-        Route::get('/comparisonlist', 'MainController@comparisonList')->name('compare.list');;
+        Route::get('/comparisonlist', 'MainController@comparisonList')->name('compare.list');
         Route::get('addto/comparison/{id}', 'MainController@docomparison')->name('compare.product');
         Route::get('/remove/product/{id}/comparsion', 'MainController@removeFromComparsion')->name('remove.compare.product');
         Route::get('bankDetail', 'MainController@bankdetail');
@@ -420,11 +416,9 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
         Route::get('strip', 'StripController@index');
         Route::post('strip', 'StripController@stripayment')->name('paytostripe');
-
     });
 
     Route::group(['middleware' => ['web', 'isActive', 'IsInstalled', 'auth', 'is_admin', 'switch_lang']], function () {
-
         Route::get('admin/wallet/settings', 'WalletController@adminWalletSettings')->name('admin.wallet.settings');
 
         Route::get('admin/wallet/settings/update', 'WalletController@updateWalletSettings')->name('admin.update.wallet.settings');
@@ -515,7 +509,7 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
         Route::post('manage/stock/{id}', 'AddSubVariantController@post')->name('manage.stock.post');
 
-/*Product Attribute Routes*/
+        /*Product Attribute Routes*/
         Route::get('admin/product/attr', 'ProductAttributeController@index')->name('attr.index');
 
         Route::get('admin/product/attr/create', 'ProductAttributeController@create')->name('attr.add');
@@ -526,32 +520,32 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
         Route::post('admin/product/attr/edit/{id}', 'ProductAttributeController@update')->name('opt.update');
 
-        Route::resource("admin/multiCurrency", "MultiCurrencyController");
-        Route::get("admin/add_curr", "MultiCurrencyController@add_currency_ajax");
-        Route::get("admin/currency_codeShow", "MultiCurrencyController@show");
-        Route::get("admin/enable_multicurrency", "MultiCurrencyController@auto_detect_location");
-        Route::get("admin/setDefault", "MultiCurrencyController@setDefault");
-        Route::get("admin/editCurrency", "MultiCurrencyController@editCurrency");
-        Route::get("admin/auto_change", "MultiCurrencyController@auto_change");
-        Route::get("admin/auto_detect_location", "MultiCurrencyController@auto_detect_location");
-        Route::get("admin/auto_update_currency", "MultiCurrencyController@auto_update_currency");
-        Route::get("admin/deleteCurrency/{id}", "MultiCurrencyController@destroy");
-        Route::post("admin/location", "MultiCurrencyController@addLocation");
-        Route::get("admin/editlocation/", "MultiCurrencyController@editLocation");
-        Route::get("admin/deleteLocation/", "MultiCurrencyController@deleteLocation");
-        Route::get("admin/checkOutUpdate/", "MultiCurrencyController@checkOutUpdate");
-        Route::get("admin/defaul_check_checkout/", "MultiCurrencyController@defaul_check_checkout");
+        Route::resource('admin/multiCurrency', 'MultiCurrencyController');
+        Route::get('admin/add_curr', 'MultiCurrencyController@add_currency_ajax');
+        Route::get('admin/currency_codeShow', 'MultiCurrencyController@show');
+        Route::get('admin/enable_multicurrency', 'MultiCurrencyController@auto_detect_location');
+        Route::get('admin/setDefault', 'MultiCurrencyController@setDefault');
+        Route::get('admin/editCurrency', 'MultiCurrencyController@editCurrency');
+        Route::get('admin/auto_change', 'MultiCurrencyController@auto_change');
+        Route::get('admin/auto_detect_location', 'MultiCurrencyController@auto_detect_location');
+        Route::get('admin/auto_update_currency', 'MultiCurrencyController@auto_update_currency');
+        Route::get('admin/deleteCurrency/{id}', 'MultiCurrencyController@destroy');
+        Route::post('admin/location', 'MultiCurrencyController@addLocation');
+        Route::get('admin/editlocation/', 'MultiCurrencyController@editLocation');
+        Route::get('admin/deleteLocation/', 'MultiCurrencyController@deleteLocation');
+        Route::get('admin/checkOutUpdate/', 'MultiCurrencyController@checkOutUpdate');
+        Route::get('admin/defaul_check_checkout/', 'MultiCurrencyController@defaul_check_checkout');
         /*End*/
 
-/*Product Values*/
+        /*Product Values*/
         Route::get('admin/product/manage/values/{id}', 'ProductValueController@get')->name('pro.val');
 
         Route::post('admin/product/manage/values/store/{id}', 'ProductValueController@store')->name('pro.val.store');
 
         Route::get('admin/product/manage/values/update/{id}/{attr_id}', 'ProductValueController@update')->name('pro.val.update');
-/*End*/
+        /*End*/
 
-/*Product Add Variant Route*/
+        /*Product Add Variant Route*/
         Route::get('admin/product/addvariant/{id}', 'AddProductVariantController@getPage')->name('add.var');
 
         Route::post('admin/product/addvariant/{id}', 'AddProductVariantController@store')->name('add.str');
@@ -568,22 +562,22 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::post('admin/product/editvariant/{id}', 'AddSubVariantController@update')->name('updt.var');
 
         Route::delete('admin/product/delete/var/{id}', 'AddSubVariantController@delete')->name('del.var');
-/*END*/
+        /*END*/
 
         Route::delete('admin/product/bulk_delete', 'ProductController@bulk_delete')->name('pro.bulk.delete');
         Route::post('admin/update/instamojo/settings', 'KeyController@instamojoupdate')->name('instamojo.update');
         Route::post('admin/update/payu/settings', 'KeyController@payuupdate')->name('store.payu.settings');
         Route::post('admin/update/paystack/settings', 'KeyController@paystackUpdate')->name('store.paystackupdate.settings');
-        Route::resource("admin/users", "UserController");
-        Route::resource("admin/category", "CategoryController");
-        Route::resource("admin/grandcategory", "GrandcategoryController");
-        Route::resource("admin/subcategory", "SubCategoryController");
-        Route::resource("admin/country", "CountryController");
-        Route::resource("admin/state", "StateController");
-        Route::resource("admin/city", "CityController");
-        Route::resource("admin/pincode", "PinCodController");
-        Route::get("myadmin", "AdminController@index")->name('admin.main');
-        Route::get("admin/appliedform", "UserController@appliedform")->name('get.store.request');
+        Route::resource('admin/users', 'UserController');
+        Route::resource('admin/category', 'CategoryController');
+        Route::resource('admin/grandcategory', 'GrandcategoryController');
+        Route::resource('admin/subcategory', 'SubCategoryController');
+        Route::resource('admin/country', 'CountryController');
+        Route::resource('admin/state', 'StateController');
+        Route::resource('admin/city', 'CityController');
+        Route::resource('admin/pincode', 'PinCodController');
+        Route::get('myadmin', 'AdminController@index')->name('admin.main');
+        Route::get('admin/appliedform', 'UserController@appliedform')->name('get.store.request');
         Route::get('admin/login-socl', 'Configcontroller@socialget')->name('gen.set');
         Route::resource('admin/invoice', 'InvoiceController');
         Route::post('setting/sociallogin/fb', 'Configcontroller@slfb')->name('sl.fb');
@@ -593,28 +587,28 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
         Route::get('/admin/paytoseller/{id}', 'SellerPaymenyController@show')->name('seller.payfororder');
 
-        Route::get("admin/icon", "AdminController@icon");
-        Route::resource("admin/stores", "StoreController");
-        Route::resource("admin/brand", "BrandController");
+        Route::get('admin/icon', 'AdminController@icon');
+        Route::resource('admin/stores', 'StoreController');
+        Route::resource('admin/brand', 'BrandController');
         Route::get('admin/requested-brands', 'BrandController@requestedbrands')->name('requestedbrands.admin');
-        Route::resource("admin/tax", "TaxController");
-        Route::resource("admin/tax_class", "TaxClassController");
-        Route::get("admin/taxclassAdd", "TaxClassController@addRow");
-        Route::get("admin/taxclassUpdate", "TaxClassController@update");
-        Route::resource("admin/coupan", "CoupanController");
-        Route::resource("admin/commission", "CommissionController");
-        Route::resource("admin/commission_setting", "CommissionSettingController");
-        Route::get("admin/sellerpayouts", "SellerPaymenyController@index")->name('seller.payouts.index');
+        Route::resource('admin/tax', 'TaxController');
+        Route::resource('admin/tax_class', 'TaxClassController');
+        Route::get('admin/taxclassAdd', 'TaxClassController@addRow');
+        Route::get('admin/taxclassUpdate', 'TaxClassController@update');
+        Route::resource('admin/coupan', 'CoupanController');
+        Route::resource('admin/commission', 'CommissionController');
+        Route::resource('admin/commission_setting', 'CommissionSettingController');
+        Route::get('admin/sellerpayouts', 'SellerPaymenyController@index')->name('seller.payouts.index');
         Route::get('admin/completed/payouts', 'SellerPaymenyController@complete')->name('seller.payout.complete');
         Route::get('admin/payout/complete/print/{id}/payouts', 'SellerPaymenyController@printSlip')->name('seller.print.slip');
         Route::get('admin/payout/completed/show/{id}/payout', 'SellerPaymenyController@showCompletePayout')->name('seller.payout.show.complete');
 
-        Route::post("admin/recipt_show/", "SellerPaymenyController@recipt_show");
-        Route::get("admin/subcat", "MenuController@upload_info");
-        Route::resource("admin/shipping", "ShippingController");
+        Route::post('admin/recipt_show/', 'SellerPaymenyController@recipt_show');
+        Route::get('admin/subcat', 'MenuController@upload_info');
+        Route::resource('admin/shipping', 'ShippingController');
         Route::get('/admin/shipping-price-weight', 'ShippingWeightController@get')->name('get.wt');
         Route::post('admin/shipping-price-weight/update', 'ShippingWeightController@update')->name('update.ship.wt');
-        Route::resource("admin/order", "OrderController");
+        Route::resource('admin/order', 'OrderController');
         Route::get('admin/pending/order', 'OrderController@pendingorder')->name('admin.pending.orders');
         Route::delete('order/bulkdelete', 'OrderController@bulkdelete')->name('order.bulk.delete');
 
@@ -623,26 +617,26 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('/order/{orderid}/invoice/{id}', 'OrderController@printInvoice')->name('print.invoice');
         Route::get('/admin/order/edit/{orderid}/', 'OrderController@editOrder')->name('admin.order.edit');
 
-        Route::get("order/pending/", "OrderController@pending");
-        Route::get("order/deliverd", "OrderController@deliverd");
-        Route::resource("admin/slider", "SliderController");
-        Route::resource("admin/faq", "FaqController");
-        Route::resource("admin/cod", "CodController");
+        Route::get('order/pending/', 'OrderController@pending');
+        Route::get('order/deliverd', 'OrderController@deliverd');
+        Route::resource('admin/slider', 'SliderController');
+        Route::resource('admin/faq', 'FaqController');
+        Route::resource('admin/cod', 'CodController');
 
-        Route::get("admin/product_faq/create/{id}", "FaqProductController@create");
+        Route::get('admin/product_faq/create/{id}', 'FaqProductController@create');
         Route::resource('admin/return_policy/', 'ReturnProductController');
         Route::get('admin/return_policy/edit/{id}', 'ReturnProductController@edit');
         Route::PUT('admin/return_policy/update/{id}', 'ReturnProductController@update');
-        Route::get("pincode-add", "PinCodController@pincode_add");
-        Route::get("admin/available-destination", "PinCodController@show_destination");
-        Route::get("admin/destination", "PinCodController@destination")->name('admin.desti');
+        Route::get('pincode-add', 'PinCodController@pincode_add');
+        Route::get('admin/available-destination', 'PinCodController@show_destination');
+        Route::get('admin/destination', 'PinCodController@destination')->name('admin.desti');
 
         Route::get('admin/destination/listbycountry/{country}/pincode', 'PinCodController@getDestinationdata')->name('country.list.pincode');
-// custom css and js
+        // custom css and js
         Route::get('/admin/custom-style-settings', 'CustomStyleController@addStyle')->name('customstyle');
         Route::post('/admin/custom-style-settings/addcss', 'CustomStyleController@storeCSS')->name('css.store');
         Route::post('/admin/custom-style-settings/addjs', 'CustomStyleController@storeJS')->name('js.store');
-// End custom css and js
+        // End custom css and js
         Route::resource('admin/abuse/', 'AbusedController');
         Route::get('abuse/', 'AbusedController@show');
 
@@ -657,40 +651,41 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('admin/return_policy/destroy/{id}', 'ReturnProductController@destroy');
         Route::get('admin/return_products_show/edit/{id}', 'ReturnProductController@edit_return_product');
         Route::put('admin/return_products_show/edit/{id}', 'ReturnProductController@update_return_product');
-        Route::resource("admin/menu", "MenuController");
-        Route::resource("admin/page", "PageController");
-        Route::resource("admin/genral", "GenralController");
-        Route::resource("admin/review", "ReviewController");
-        Route::get("admin/review_approval", "ReviewController@review_approval")->name('r.ap');
-        Route::resource("admin/seo", "SeoController");
-        Route::resource("admin/social", "SocialController");
-        Route::resource("admin/unit", "UnitController");
+        Route::resource('admin/menu', 'MenuController');
+        Route::resource('admin/page', 'PageController');
+        Route::resource('admin/genral', 'GenralController');
+        Route::resource('admin/review', 'ReviewController');
+        Route::get('admin/review_approval', 'ReviewController@review_approval')->name('r.ap');
+        Route::resource('admin/seo', 'SeoController');
+        Route::resource('admin/social', 'SocialController');
+        Route::resource('admin/unit', 'UnitController');
         Route::get('admin/unit/{id}/values', 'UnitController@getValues')->name('unit.values');
         Route::post('admin/unit/{id}/values', 'UnitController@storeValue')->name('store.val.unit');
         Route::put('admin/unit/edit/{id}/value', 'UnitController@editValue')->name('edit.val.unit');
         Route::delete('admin/units/delete/{id}', 'UnitController@unitvaldelete')->name('del.unit.val');
 
-        Route::resource("admin/widget", "WidgetsettingController");
-        Route::resource("admin/zone", "ZoneController");
-        Route::resource("admin/testimonial", "TestimonialController");
-        Route::resource("admin/special", "SpecialOfferController");
-        Route::get("admin/sp_offer_widget", "SpecialOfferController@show_widget")->name('sp.offer.widget');
-        Route::put("admin/sp_offer_widget", "SpecialOfferController@update_widget");
-        Route::resource("admin/hotdeal", "HotdealController");
-        Route::get("admin/reletd_Product/{id}", "RealatedProductController@create");
-        Route::get("admin/product_image/", "ProductController@show_all_pro_image");
-        Route::get("admin/product_image/delete/{id}", "ProductController@pro_delete");
-        Route::resource("admin/reletdProduct", "RealatedProductController");
-        Route::get("admin/reletdProduct_setting", "RealatedProductController@setting_show");
-        Route::post("admin/reletdProduct_update", "RealatedProductController@setting_update");
-        Route::resource("admin/products", "ProductController");
-        Route::resource("admin/adv", "AdvController");
-        Route::get("admin/shipping_update", "ShippingController@shipping");
+        Route::resource('admin/widget', 'WidgetsettingController');
+        Route::resource('admin/zone', 'ZoneController');
+        Route::resource('admin/testimonial', 'TestimonialController');
+        Route::resource('admin/special', 'SpecialOfferController');
+        Route::get('admin/sp_offer_widget', 'SpecialOfferController@show_widget')->name('sp.offer.widget');
+        Route::put('admin/sp_offer_widget', 'SpecialOfferController@update_widget');
+        Route::resource('admin/hotdeal', 'HotdealController');
+        Route::get('admin/reletd_Product/{id}', 'RealatedProductController@create');
+        Route::get('admin/product_image/', 'ProductController@show_all_pro_image');
+        Route::get('admin/product_image/delete/{id}', 'ProductController@pro_delete');
+        Route::resource('admin/reletdProduct', 'RealatedProductController');
+        Route::get('admin/reletdProduct_setting', 'RealatedProductController@setting_show');
+        Route::post('admin/reletdProduct_update', 'RealatedProductController@setting_update');
+        Route::resource('admin/products', 'ProductController');
+        Route::resource('admin/used-products', 'usedProductsController');
+        Route::resource('admin/adv', 'AdvController');
+        Route::get('admin/shipping_update', 'ShippingController@shipping');
 
         Route::post('/update/cancel-full-order/status/{id}', 'FullOrderCancelController@fullOrderStatus')->name('full.can.order');
 
-        Route::get("admin/caty", "ProductController@gcat");
-        Route::post("admin/images", "ProductController@images");
+        Route::get('admin/caty', 'ProductController@gcat');
+        Route::post('admin/images', 'ProductController@images');
         Route::post('admin/edit_images/{id}', 'ProductController@edit_images');
 
         Route::resource('admin/bank_details', 'BankDetailController');
@@ -700,33 +695,31 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::resource('admin/widget_footer', 'WidgetFooterController');
         Route::resource('admin/NewProCat', 'FrontCatController');
 
-        Route::get("admin/all/customers", "UserController@onlyUsers")->name('show.allcustomer');
-        Route::get("admin/all/sellers", "UserController@onlySellers")->name('show.allvenders');
-        Route::get("admin/all/admins", "UserController@onlyAdmins")->name('show.alladmins');
-        Route::get("admin/order_print/{id}", "AdminController@order_print");
+        Route::get('admin/all/customers', 'UserController@onlyUsers')->name('show.allcustomer');
+        Route::get('admin/all/sellers', 'UserController@onlySellers')->name('show.allvenders');
+        Route::get('admin/all/admins', 'UserController@onlyAdmins')->name('show.alladmins');
+        Route::get('admin/order_print/{id}', 'AdminController@order_print');
 
         Route::resource('admin/detailadvertise', 'DetailAdsController');
 
-        Route::get("admin/dashbord-setting", "DashboardController@dashbordsetting")->name('admin.dash');
-        Route::post("admin/dashbord-setting/{id}", "DashboardController@dashbordsettingu")->name('admin.dash.update');
+        Route::get('admin/dashbord-setting', 'DashboardController@dashbordsetting')->name('admin.dash');
+        Route::post('admin/dashbord-setting/{id}', 'DashboardController@dashbordsettingu')->name('admin.dash.update');
 
         Route::post('admin/dashbord-setting/fb/{id}', 'DashboardController@fbSetting')->name('fb.update');
         Route::post('admin/dashbord-setting/tw/{id}', 'DashboardController@twSetting')->name('tw.update');
         Route::post('admin/dashbord-setting/ins/{id}', 'DashboardController@insSetting')->name('ins.update');
-
     });
 
-    Route::get("admin/gcat", "ProductController@gcato");
-    Route::get("admin/dropdown", "ProductController@upload_info");
+    Route::get('admin/gcat', 'ProductController@gcato');
+    Route::get('admin/dropdown', 'ProductController@upload_info');
 
     Route::get('admin/choose_state', 'UserController@choose_country');
     Route::get('admin/choose_city', 'UserController@choose_city');
 
-/*Admin Routes END*/
+    /*Admin Routes END*/
 
-/*Admin + Seller Routes */
+    /*Admin + Seller Routes */
     Route::group(['middleware' => ['web', 'isActive', 'IsInstalled', 'auth', 'SellerAdminMix']], function () {
-
         Route::post('/additonal/price/detail', 'VenderProductController@additionalPrice')->name('add.price.product');
 
         Route::get('/admin/quick/get/order/detail', 'OrderController@QuickOrderDetails')->name('quickorderdtls');
@@ -735,7 +728,7 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
         Route::delete('/delete/common/variant/{id}', 'AddProductVariantController@delCommon')->name('del.common');
 
-        Route::resource("admin/product_faq", "FaqProductController");
+        Route::resource('admin/product_faq', 'FaqProductController');
 
         Route::get('/track/payput/status/{batchid}', 'SellerPaymenyController@track')->name('payout.status');
 
@@ -772,17 +765,14 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
         Route::get('/admin/update/read-at/cancel/fullorder', 'TrackRefundController@readfullorder');
 
         Route::post('/update/commonvar/{id}', 'AddProductVariantController@updatecommon')->name('common.update');
-
     });
 
-/*End*/
+    /*End*/
 
-/*Vendor Routes start*/
+    /*Vendor Routes start*/
 
     Route::group(['middleware' => ['web', 'isActive', 'IsInstalled', 'auth', 'is_vendor', 'switch_lang']], function () {
-
         Route::prefix('seller')->group(function () {
-
             Route::get('categories', 'ShippingInfoController@getcategories')->name('seller.get.categories');
 
             Route::get('subcategories', 'ShippingInfoController@getsubcategories')->name('seller.get.subcategories');
@@ -854,29 +844,29 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
             Route::post('invoicesetting', 'VenderController@createInvoiceSetting')->name('vender.invoice.sop');
 
-            Route::get("sellerdashboard/", "VenderController@dashbord")->name('seller.dboard');
-            Route::get("store/delete/{id}", "VenderController@destroy");
-            Route::resource("store", "VenderController");
-            Route::get("orders", "VenderController@order");
-            Route::get("enable", "VenderController@enable");
+            Route::get('sellerdashboard/', 'VenderController@dashbord')->name('seller.dboard');
+            Route::get('store/delete/{id}', 'VenderController@destroy');
+            Route::resource('store', 'VenderController');
+            Route::get('orders', 'VenderController@order');
+            Route::get('enable', 'VenderController@enable');
 
             Route::name('my.')->group(function () {
-                Route::resource("products", "VenderProductController");
+                Route::resource('products', 'VenderProductController');
             });
 
-            Route::get("commission", "VenderController@commission")->name('seller.commission');
-            Route::get("myprofile", "VenderController@profile")->name('get.profile');
-            Route::post("myprofile", "VenderController@updateprofile")->name('seller.profile.update');
-            Route::get("cod", "CodController@showcashOn");
-            Route::put("seller/cod/{id}", "CodController@editupdateOn");
-            Route::get("cod/edit/{id}", "CodController@editcashOn");
-            Route::resource("shipping", "VenderShippingController");
-            Route::get("shipping_update", "ShippingController@shipping");
-            Route::get("shipping_updates", "VenderShippingController@shipping");
-            Route::resource("reletdProduct", "RealatedProductController");
-            Route::get("reletdProduct_setting", "RealatedProductController@setting_show");
-            Route::post("reletdProduct_update", "RealatedProductController@setting_update");
-            Route::post("recipt_show/", "SellerPaymenyController@vendor_recipt_show");
+            Route::get('commission', 'VenderController@commission')->name('seller.commission');
+            Route::get('myprofile', 'VenderController@profile')->name('get.profile');
+            Route::post('myprofile', 'VenderController@updateprofile')->name('seller.profile.update');
+            Route::get('cod', 'CodController@showcashOn');
+            Route::put('seller/cod/{id}', 'CodController@editupdateOn');
+            Route::get('cod/edit/{id}', 'CodController@editcashOn');
+            Route::resource('shipping', 'VenderShippingController');
+            Route::get('shipping_update', 'ShippingController@shipping');
+            Route::get('shipping_updates', 'VenderShippingController@shipping');
+            Route::resource('reletdProduct', 'RealatedProductController');
+            Route::get('reletdProduct_setting', 'RealatedProductController@setting_show');
+            Route::post('reletdProduct_update', 'RealatedProductController@setting_update');
+            Route::post('recipt_show/', 'SellerPaymenyController@vendor_recipt_show');
             Route::post('update/ship', 'ShippingWeightController@update');
 
             Route::get('view/order/{id}', 'VenderOrderController@viewOrder')->name('seller.view.order');
@@ -886,12 +876,10 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
             Route::get('print/{orderid}/invoice/{id}', 'VenderOrderController@printInvoice')->name('seller.print.invoice');
 
             Route::get('order/{orderid}/edit', 'VenderOrderController@editOrder')->name('seller.order.edit');
-
         });
-
     });
 
-/*Seller Routes END*/
+    /*Seller Routes END*/
 
     Route::get('update/orderstatus/{id}', 'VenderOrderController@updateStatus');
     Route::delete('/delete/order/{id}', 'VenderOrderController@delete')->name('order.delete');
@@ -904,7 +892,7 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
     Route::post('admin/update/paypal/setting', 'KeyController@savePaypal')->name('paypal.setting.update')->middleware('is_admin');
     Route::post('admin/update/stripe/setting', 'KeyController@saveStripe')->name('stripe.setting.update')->middleware('is_admin');
     Route::post('admin/update/braintree/setting', 'KeyController@saveBraintree')->name('bt.setting.update')->middleware('is_admin');
-/*Quick Update Routes*/
+    /*Quick Update Routes*/
 
     Route::post('/admin/quickupdate/unit/{id}', 'QuickUpdateController@unitUpdate')->name('unit.quick.update');
 
@@ -974,13 +962,13 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
     Route::post('/admin/quickupdate/store/request/{id}', 'QuickUpdateController@acpstore')->name('store.acp.quick.update');
 
-/*End*/
+    /*End*/
 
-/*Quick Add Routes*/
+    /*Quick Add Routes*/
     Route::post('/admin/quickadd/category', 'QuickAddController@quickAddCat')->name('quick.cat.add');
 
     Route::post('/admin/quickadd/subcategory', 'QuickAddController@quickAddSub')->name('quick.sub.add');
-/*END*/
+    /*END*/
 
     Route::get('/loadmore', 'LoadMoreController@index');
     Route::post('/loadmore/load_data', 'LoadMoreController@load_data')->name('loadmore.load_data');
@@ -990,5 +978,4 @@ Route::group(['middleware' => ['maintainence_mode']], function () {
 
     Route::get('image/upload', 'VenderShippingController@create_image');
     Route::post('image/upload/store/{id}', 'VenderShippingController@storeImage');
-
 });

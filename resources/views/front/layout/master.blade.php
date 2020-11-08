@@ -569,6 +569,7 @@
                                         {
 
                                         $weight = App\Shipping::first();
+                                        
                                         $pro_weight =  $cart->variant->weight;
                                         if($weight->weight_to_0 >= $pro_weight)
                                         {
